@@ -1,0 +1,25 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link href="https://fonts.googleapis.com/css2?family=PT+Serif:ital,wght@0,400;0,700;1,400&family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="css/style.css"><title>Маршрут — заметки о путешествиях по России</title><script>try{document.documentElement.dataset.theme=localStorage.getItem("blog-theme")||""}catch(e){}function toggleTheme(){var d=document.documentElement;d.dataset.theme=d.dataset.theme?"":"dark";try{localStorage.setItem("blog-theme",d.dataset.theme)}catch(e){}}</script></head>
+<body>
+<div class="top"><a class="logo" href="index.html">Маршрут</a><button onclick="toggleTheme()">Ночной режим</button></div>
+<section class="feature" id="feature"></section>
+<nav class="tags" id="tags"></nav>
+<main class="grid" id="grid"></main>
+<footer>Маршрут — блог о путешествиях без спешки. Тексты и иллюстрации созданы для этого проекта.</footer>
+<script src="js/landscape.js"></script><script src="js/posts.js"></script>
+<script>
+var sorted = POSTS.slice().sort(function (a, b) { return b.date.localeCompare(a.date); });
+var f = sorted[0], tag = 'все';
+document.getElementById('feature').innerHTML = '<a class="art" href="article.html?p=' + f.slug + '">' + landscape(f.seed, PALETTES[f.palette], { water: f.water, label: f.title }) + '</a>' +
+  '<div class="txt"><span class="kicker">Новое · ' + f.place + '</span><a href="article.html?p=' + f.slug + '"><h1>' + f.title + '</h1></a><p>' + f.lead + '</p><span class="meta">' + fmtDate(f.date) + ' · ' + readingTime(f.body) + ' мин чтения</span></div>';
+function render() {
+  var tags = ['все'].concat(POSTS.map(function (p) { return p.tag; }).filter(function (t, i, a) { return a.indexOf(t) === i; }));
+  document.getElementById('tags').innerHTML = tags.map(function (t) { return '<button class="' + (t === tag ? 'on' : '') + '" data-t="' + t + '">' + t + '</button>'; }).join('');
+  document.getElementById('grid').innerHTML = sorted.slice(1).filter(function (p) { return tag === 'все' || p.tag === tag; }).map(function (p) {
+    return '<article class="card"><a href="article.html?p=' + p.slug + '"><div class="art">' + landscape(p.seed, PALETTES[p.palette], { water: p.water, h: 900, label: p.title }) + '</div>' +
+      '<span class="kicker">' + p.place + '</span><h2>' + p.title + '</h2><p>' + p.lead + '</p></a><span class="meta">' + fmtDate(p.date) + '</span></article>';
+  }).join('') || '<p class="meta">В этой рубрике пока одна статья, она наверху.</p>';
+}
+document.getElementById('tags').onclick = function (e) { var b = e.target.closest('[data-t]'); if (b) { tag = b.dataset.t; render(); } };
+render();
+</script>
+</body></html>

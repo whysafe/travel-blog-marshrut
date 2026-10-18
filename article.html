@@ -1,0 +1,37 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link href="https://fonts.googleapis.com/css2?family=PT+Serif:ital,wght@0,400;0,700;1,400&family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="css/style.css"><title>Маршрут</title><script>try{document.documentElement.dataset.theme=localStorage.getItem("blog-theme")||""}catch(e){}function toggleTheme(){var d=document.documentElement;d.dataset.theme=d.dataset.theme?"":"dark";try{localStorage.setItem("blog-theme",d.dataset.theme)}catch(e){}}</script></head>
+<body>
+<div class="progress" id="progress"></div>
+<div class="top"><a class="logo" href="index.html">Маршрут</a><button onclick="toggleTheme()">Ночной режим</button></div>
+<div id="root"></div>
+<footer>Маршрут — блог о путешествиях без спешки.</footer>
+<script src="js/landscape.js"></script><script src="js/posts.js"></script>
+<script>
+var slug = new URLSearchParams(location.search).get('p');
+var i = POSTS.findIndex(function (p) { return p.slug === slug; }), p = POSTS[i];
+var root = document.getElementById('root');
+if (!p) {
+  root.innerHTML = '<div class="article"><header><h1>Статья не найдена</h1><p class="lead"><a href="index.html">Вернуться на главную</a></p></header></div>';
+} else {
+  document.title = p.title + ' — Маршрут';
+  // Соседние статьи по дате публикации, а не по порядку в массиве: «Раньше» старее, «Дальше» новее
+  var byDate = POSTS.slice().sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
+  var pos = byDate.indexOf(p), prev = byDate[pos - 1], next = byDate[pos + 1];
+  root.innerHTML = '<div class="cover">' + landscape(p.seed, PALETTES[p.palette], { water: p.water, label: p.title }) + '</div>' +
+    '<article class="article"><header><span class="kicker">' + p.place + '</span><h1>' + p.title + '</h1><p class="lead">' + p.lead + '</p>' +
+    '<p class="meta">' + fmtDate(p.date) + ' · ' + readingTime(p.body) + ' мин чтения</p></header>' +
+    '<div class="body" id="body">' + p.body + '</div><nav class="toc" id="toc" aria-label="Содержание"></nav>' +
+    '<div class="next">' + (prev ? '<a href="article.html?p=' + prev.slug + '">← Раньше<b>' + prev.title + '</b></a>' : '<span></span>') +
+    (next ? '<a href="article.html?p=' + next.slug + '" style="text-align:right">Дальше →<b>' + next.title + '</b></a>' : '<span></span>') + '</div></article>';
+  var heads = document.querySelectorAll('#body h2');
+  heads.forEach(function (h, k) { h.id = 's' + k; });
+  document.getElementById('toc').innerHTML = '<span class="kicker">В статье</span>' + Array.prototype.map.call(heads, function (h) { return '<a href="#' + h.id + '">' + h.textContent + '</a>'; }).join('');
+  addEventListener('scroll', function () {
+    var max = document.documentElement.scrollHeight - innerHeight;
+    document.getElementById('progress').style.width = (scrollY / max * 100) + '%';
+    var current = null;
+    heads.forEach(function (h) { if (h.getBoundingClientRect().top < 120) current = h.id; });
+    document.querySelectorAll('#toc a').forEach(function (a) { a.classList.toggle('on', a.getAttribute('href') === '#' + current); });
+  }, { passive: true });
+}
+</script>
+</body></html>
